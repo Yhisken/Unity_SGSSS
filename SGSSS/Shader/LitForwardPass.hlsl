@@ -37,9 +37,8 @@ struct Varyings
 #endif
 
     float3 normalWS                 : TEXCOORD2;
-#if defined(REQUIRES_WORLD_SPACE_TANGENT_INTERPOLATOR)
+
     half4 tangentWS                : TEXCOORD3;    // xyz: tangent, w: sign
-#endif
 
 #ifdef _ADDITIONAL_LIGHTS_VERTEX
     half4 fogFactorAndVertexLight   : TEXCOORD5; // x: fogFactor, yzw: vertex light
@@ -74,18 +73,15 @@ void InitializeInputData(Varyings input, half3 normalTS, out InputData inputData
 #endif
 
     half3 viewDirWS = GetWorldSpaceNormalizeViewDir(input.positionWS);
-#if defined(_NORMALMAP) || defined(_DETAIL)
+
     float sgn = input.tangentWS.w;      // should be either +1 or -1
     float3 bitangent = sgn * cross(input.normalWS.xyz, input.tangentWS.xyz);
     half3x3 tangentToWorld = half3x3(input.tangentWS.xyz, bitangent.xyz, input.normalWS.xyz);
 
-    #if defined(_NORMALMAP)
+    
     inputData.tangentToWorld = tangentToWorld;
-    #endif
+  
     inputData.normalWS = TransformTangentToWorld(normalTS, tangentToWorld);
-#else
-    inputData.normalWS = input.normalWS;
-#endif
 
     inputData.normalWS = NormalizeNormalPerPixel(inputData.normalWS);
     inputData.viewDirectionWS = viewDirWS;
@@ -226,15 +222,15 @@ void LitPassFragment(
     InputData inputData;
     InitializeInputData(input, surfaceData.normalTS, inputData);
     SETUP_DEBUG_TEXTURE_DATA(inputData, input.uv, _BaseMap);
-
+    inputData.normalWS = TransformTangentToWorld(surfaceData.normalTS, inputData.tangentToWorld);
 #ifdef _DBUFFER
     ApplyDecalToSurfaceData(input.positionCS, surfaceData, inputData);
 #endif
-
+    
     half4 color = UniversalFragmentPBR(inputData, surfaceData);
     color.rgb = MixFog(color.rgb, inputData.fogCoord);
     color.a = OutputAlpha(color.a, IsSurfaceTypeTransparent(_Surface));
-
+    inputData.normalWS = normalize(inputData.normalWS);
     outColor = color;
 
 #ifdef _WRITE_RENDERING_LAYERS

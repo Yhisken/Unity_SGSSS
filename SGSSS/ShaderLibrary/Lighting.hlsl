@@ -126,13 +126,14 @@ half3 LightingSpecular(half3 lightColor, half3 lightDir, half3 normal, half3 vie
 half3 LightingPhysicallyBased(BRDFData brdfData, BRDFData brdfDataClearCoat,
     half3 lightColor, half3 lightDirectionWS, half lightAttenuation,
     half3 normalWS, half3 viewDirectionWS,
-    half clearCoatMask, bool specularHighlightsOff, half3 posWS,half curvature)
+    half clearCoatMask, bool specularHighlightsOff, half3 posWS,half curvature,half thickness)
 {
     //half NdotL = saturate(dot(normalWS, lightDirectionWS));
     //half Curvature = curvature(normalWS, posWS);
     half Curvature = curvature;
     half3 NdotL = SGDiffuseLighting(normalWS , lightDirectionWS, _ScatterAmt*Curvature);
-    half3 radiance =  lightAttenuation*(lightColor * NdotL);
+    half3 Ndot_L = SGDiffuseLighting(normalWS , -lightDirectionWS, _ScatterAmt*Curvature)*thickness;
+    half3 radiance =  lightAttenuation*(lightColor * (NdotL+Ndot_L));
     //return NdotL;
     
     half3 brdf = brdfData.diffuse;
@@ -162,13 +163,13 @@ half3 LightingPhysicallyBased(BRDFData brdfData, BRDFData brdfDataClearCoat,
     return brdf * radiance;
 }
 
-half3 LightingPhysicallyBased(BRDFData brdfData, BRDFData brdfDataClearCoat, Light light, half3 normalWS, half3 viewDirectionWS, half clearCoatMask, bool specularHighlightsOff, half3 posWS,half curvature)
+half3 LightingPhysicallyBased(BRDFData brdfData, BRDFData brdfDataClearCoat, Light light, half3 normalWS, half3 viewDirectionWS, half clearCoatMask, bool specularHighlightsOff, half3 posWS,half curvature,half thickness)
 {
-    return LightingPhysicallyBased(brdfData, brdfDataClearCoat, light.color, light.direction, light.distanceAttenuation * light.shadowAttenuation, normalWS, viewDirectionWS, clearCoatMask, specularHighlightsOff ,  posWS,curvature);
+    return LightingPhysicallyBased(brdfData, brdfDataClearCoat, light.color, light.direction, light.distanceAttenuation * light.shadowAttenuation, normalWS, viewDirectionWS, clearCoatMask, specularHighlightsOff ,  posWS,curvature, thickness);
 }
 
 // Backwards compatibility
-half3 LightingPhysicallyBased(BRDFData brdfData, Light light, half3 normalWS, half3 viewDirectionWS, half3 posWS , half curvature)
+half3 LightingPhysicallyBased(BRDFData brdfData, Light light, half3 normalWS, half3 viewDirectionWS, half3 posWS , half curvature , half thickness)
 {
     #ifdef _SPECULARHIGHLIGHTS_OFF
     bool specularHighlightsOff = true;
@@ -176,23 +177,23 @@ half3 LightingPhysicallyBased(BRDFData brdfData, Light light, half3 normalWS, ha
     bool specularHighlightsOff = false;
 #endif
     const BRDFData noClearCoat = (BRDFData)0;
-    return LightingPhysicallyBased(brdfData, noClearCoat, light, normalWS, viewDirectionWS, 0.0, specularHighlightsOff,  posWS,curvature);
+    return LightingPhysicallyBased(brdfData, noClearCoat, light, normalWS, viewDirectionWS, 0.0, specularHighlightsOff,  posWS,curvature , thickness);
 }
 
-half3 LightingPhysicallyBased(BRDFData brdfData, half3 lightColor, half3 lightDirectionWS, half lightAttenuation, half3 normalWS, half3 viewDirectionWS, half3 posWS, half curvature)
+half3 LightingPhysicallyBased(BRDFData brdfData, half3 lightColor, half3 lightDirectionWS, half lightAttenuation, half3 normalWS, half3 viewDirectionWS, half3 posWS, half curvature, half thickness)
 {
     Light light;
     light.color = lightColor;
     light.direction = lightDirectionWS;
     light.distanceAttenuation = lightAttenuation;
     light.shadowAttenuation   = 1;
-    return LightingPhysicallyBased(brdfData, light, normalWS, viewDirectionWS , posWS , curvature);
+    return LightingPhysicallyBased(brdfData, light, normalWS, viewDirectionWS , posWS , curvature,thickness);
 }
 
-half3 LightingPhysicallyBased(BRDFData brdfData, Light light, half3 normalWS, half3 viewDirectionWS, bool specularHighlightsOff , half3 posWS ,half curvature)
+half3 LightingPhysicallyBased(BRDFData brdfData, Light light, half3 normalWS, half3 viewDirectionWS, bool specularHighlightsOff , half3 posWS ,half curvature,half thickness)
 {
     const BRDFData noClearCoat = (BRDFData)0;
-    return LightingPhysicallyBased(brdfData, noClearCoat, light, normalWS, viewDirectionWS, 0.0, specularHighlightsOff ,posWS,curvature);
+    return LightingPhysicallyBased(brdfData, noClearCoat, light, normalWS, viewDirectionWS, 0.0, specularHighlightsOff ,posWS,curvature,thickness);
 }
 
 half3 LightingPhysicallyBased(BRDFData brdfData, half3 lightColor, half3 lightDirectionWS, half lightAttenuation, half3 normalWS, half3 viewDirectionWS, bool specularHighlightsOff , half3 posWS ,half curvature)
@@ -387,7 +388,7 @@ half4 UniversalFragmentPBR(InputData inputData, SurfaceData surfaceData)
         lightingData.mainLightColor = LightingPhysicallyBased(brdfData, brdfDataClearCoat,
                                                               mainLight,
                                                               inputData.normalWS, inputData.viewDirectionWS,
-                                                              surfaceData.clearCoatMask, specularHighlightsOff, inputData.positionWS,surfaceData.curvature);
+                                                              surfaceData.clearCoatMask, specularHighlightsOff, inputData.positionWS,surfaceData.curvature,surfaceData.thickness);
     }
 
     #if defined(_ADDITIONAL_LIGHTS)
@@ -406,7 +407,7 @@ half4 UniversalFragmentPBR(InputData inputData, SurfaceData surfaceData)
         {
             lightingData.additionalLightsColor += LightingPhysicallyBased(brdfData, brdfDataClearCoat, light,
                                                                           inputData.normalWS, inputData.viewDirectionWS,
-                                                                          surfaceData.clearCoatMask, specularHighlightsOff, inputData.positionWS,surfaceData.curvature);
+                                                                          surfaceData.clearCoatMask, specularHighlightsOff, inputData.positionWS,surfaceData.curvature,surfaceData.thickness);
         }
     }
     #endif
@@ -420,7 +421,7 @@ half4 UniversalFragmentPBR(InputData inputData, SurfaceData surfaceData)
         {
             lightingData.additionalLightsColor += LightingPhysicallyBased(brdfData, brdfDataClearCoat, light,
                                                                           inputData.normalWS, inputData.viewDirectionWS,
-                                                                          surfaceData.clearCoatMask, specularHighlightsOff, inputData.positionWS,surfaceData.curvature);
+                                                                          surfaceData.clearCoatMask, specularHighlightsOff, inputData.positionWS,surfaceData.curvature,surfaceData.thickness);
         }
     LIGHT_LOOP_END
     #endif

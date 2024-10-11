@@ -35,7 +35,8 @@ Shader "Universal Render Pipeline/SGSSS_Lit"
 
         [HDR] _EmissionColor("Color", Color) = (0,0,0)
         _EmissionMap("Emission", 2D) = "white" {}
-
+        _Thickness("Thickness Map", 2D) = "black" {}
+        
         _DetailMask("Detail Mask", 2D) = "white" {}
         _DetailAlbedoMapScale("Scale", Range(0.0, 2.0)) = 1.0
         _DetailAlbedoMap("Detail Albedo x2", 2D) = "linearGrey" {}

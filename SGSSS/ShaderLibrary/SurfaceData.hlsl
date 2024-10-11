@@ -10,6 +10,7 @@ struct SurfaceData
     half  smoothness;
     half  smoothness_2;
     half curvature;
+    half thickness;
     half3 normalTS;
     half3 emission;
     half  occlusion;

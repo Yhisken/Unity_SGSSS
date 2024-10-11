@@ -119,6 +119,7 @@ void SetupDOTSLitMaterialPropertyCaches()
 
 #endif
 TEXTURE2D(_Curvature);          SAMPLER(sampler_Curvature);
+TEXTURE2D(_Thickness);       SAMPLER(sampler_Thickness);
 TEXTURE2D(_ParallaxMap);        SAMPLER(sampler_ParallaxMap);
 TEXTURE2D(_OcclusionMap);       SAMPLER(sampler_OcclusionMap);
 TEXTURE2D(_DetailMask);         SAMPLER(sampler_DetailMask);
@@ -192,12 +193,10 @@ half4 SampleMetallicSpecGloss2(float2 uv, half albedoAlpha)
 
 half SampleOcclusion(float2 uv)
 {
-    #ifdef _OCCLUSIONMAP
-        half occ = SAMPLE_TEXTURE2D(_OcclusionMap, sampler_OcclusionMap, uv).g;
-        return LerpWhiteTo(occ, _OcclusionStrength);
-    #else
-        return half(1.0);
-    #endif
+    
+    half occ = SAMPLE_TEXTURE2D(_OcclusionMap, sampler_OcclusionMap, uv).g;
+    return LerpWhiteTo(occ, _OcclusionStrength);
+
 }
 
 
@@ -221,9 +220,7 @@ half2 SampleClearCoat(float2 uv)
 
 void ApplyPerPixelDisplacement(half3 viewDirTS, inout float2 uv)
 {
-#if defined(_PARALLAXMAP)
     uv += ParallaxMapping(TEXTURE2D_ARGS(_ParallaxMap, sampler_ParallaxMap), viewDirTS, _Parallax, uv);
-#endif
 }
 
 // Used for scaling detail albedo. Main features:
@@ -285,7 +282,7 @@ inline void InitializeStandardLitSurfaceData(float2 uv, out SurfaceData outSurfa
     half4 specGloss = SampleMetallicSpecGloss(uv, albedoAlpha.a);
     outSurfaceData.albedo = albedoAlpha.rgb * _BaseColor.rgb;
     outSurfaceData.albedo = AlphaModulate(outSurfaceData.albedo, outSurfaceData.alpha);
-
+    outSurfaceData.thickness = SAMPLE_TEXTURE2D(_Thickness, sampler_Thickness, uv).r;
 #if _SPECULAR_SETUP
     outSurfaceData.metallic = half(1.0);
     outSurfaceData.specular = specGloss.rgb;
@@ -298,7 +295,8 @@ inline void InitializeStandardLitSurfaceData(float2 uv, out SurfaceData outSurfa
     outSurfaceData.smoothness_2 = SampleMetallicSpecGloss2(uv, albedoAlpha.a).a;
     half smoothnessFinal = lerp(_Smoothness, _Smoothness2, _SmoothRatio);
     outSurfaceData.smoothness = smoothnessFinal;
-    outSurfaceData.normalTS = SampleNormal(uv, TEXTURE2D_ARGS(_BumpMap, sampler_BumpMap), _BumpScale);
+    outSurfaceData.normalTS = UnpackNormal(SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, uv));
+    //outSurfaceData.normalTS = SampleNormal(uv, TEXTURE2D_ARGS(_BumpMap, sampler_BumpMap), _BumpScale);
     outSurfaceData.occlusion = SampleOcclusion(uv);
     outSurfaceData.emission = SampleEmission(uv, _EmissionColor.rgb, TEXTURE2D_ARGS(_EmissionMap, sampler_EmissionMap));
 

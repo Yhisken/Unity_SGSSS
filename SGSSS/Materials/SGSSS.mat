@@ -14,7 +14,7 @@ Material:
   m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
+  m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap:
@@ -33,7 +33,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Curvature:
-        m_Texture: {fileID: 2800000, guid: c96be965f6771184bac785d5923f9d43, type: 3}
+        m_Texture: {fileID: 2800000, guid: 3e79395868f36d1489c3290d6d961ef0, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DetailAlbedoMap:
@@ -45,7 +45,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DetailNormalMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: da931c324edadde42b087554e00c8770, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EmissionMap:
@@ -72,6 +72,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _Thickness:
+        m_Texture: {fileID: 2800000, guid: ab23020b8eac34647a1049fb449fd06c, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -86,17 +90,17 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _AlphaClip: 0
+    - _AlphaClip: 1
     - _AlphaToMask: 0
-    - _Blend: 0
+    - _Blend: 1.3
     - _BlendModePreserveSpecular: 1
     - _BumpScale: 1
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
     - _Cull: 2
     - _Cutoff: 0.281
-    - _DetailAlbedoMapScale: 1
-    - _DetailNormalMapScale: 1
+    - _DetailAlbedoMapScale: 1.4
+    - _DetailNormalMapScale: 1.51
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
@@ -109,14 +113,14 @@ Material:
     - _QueueOffset: 0
     - _ReceiveShadows: 1
     - _ScatterAmt: 0.004
-    - _SmoothRatio: 0.85
-    - _Smoothness: 0.682
+    - _SmoothRatio: 0.48
+    - _Smoothness: 0.7
     - _Smoothness2: 0.494
     - _SmoothnessTextureChannel: 1.55
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
-    - _Surface: 0
+    - _Surface: 0.69
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:
